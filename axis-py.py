@@ -71,8 +71,8 @@ def run():
         }
 
         # Specify TLS version and cipher suite
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-        context.set_ciphers('AES256-SHA')
+        ssl_context = ssl.create_default_context()
+        ssl_context.set_ciphers('AES256-SHA')
 
         response = requests.post(
             url,
@@ -81,7 +81,6 @@ def run():
             verify=False,  # Disabling SSL verification (not recommended in production)
             timeout=10,  # Set a reasonable timeout
             cert=None,  # You can provide a client certificate if required
-            ssl_context=context,
         )
 
         print('API Response:', response.text)
