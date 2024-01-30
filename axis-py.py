@@ -1,5 +1,7 @@
 import requests
 from jose import jwt, jwk
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 from jose.constants import ALGORITHMS
 import ssl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -50,7 +52,7 @@ rwT93M7Rh8W8gvuN497C+Tg=
 def run():
     try:
         # Create JWE
-        private_key = jwk.construct(private_key_pem, 'pem')
+        private_key = serialization.load_pem_private_key(private_key_pem.encode(), password=None, backend=default_backend())
         jwe_token = jwt.encode(data_to_encode, private_key, algorithm='RS256', headers={'alg': 'RSA-OAEP', 'enc': 'A256GCM'})
 
         # Make HTTP request
