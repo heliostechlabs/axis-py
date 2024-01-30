@@ -3,7 +3,29 @@ import requests
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
-# ... (rest of the script remains the same)
+private_key_pem = """
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/8Vjz1glMyPv0
+... (your private key here) ...
+-----END PRIVATE KEY-----
+"""
+
+data_to_encode = {
+    "Data": {
+        "userName": "alwebuser",
+        "password": "acid_qa",
+    },
+    "Risks": {},
+}
+
+
+def load_private_key(pem_key):
+    return serialization.load_pem_private_key(
+        pem_key.encode(),
+        password=None,
+        backend=default_backend(),
+    )
+
 
 def run():
     try:
