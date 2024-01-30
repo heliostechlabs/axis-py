@@ -50,7 +50,7 @@ rwT93M7Rh8W8gvuN497C+Tg=
 def run():
     try:
         # Create JWE
-        private_key = jwk.construct(private_key_pem, 'pem', kid='key-id')
+        private_key = jwk.construct(private_key_pem, 'pem')
         jwe_token = jwt.encode(data_to_encode, private_key, algorithm='RS256', headers={'alg': 'RSA-OAEP', 'enc': 'A256GCM'})
 
         # Make HTTP request
