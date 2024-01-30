@@ -1,4 +1,4 @@
-from jose import jwe, jwk, jwt
+import jwt
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
@@ -49,19 +49,13 @@ def load_private_key(private_key_pem):
         backend=default_backend()
     )
 
-def convert_private_key_to_jwk(private_key):
-    return jwk.construct({"kty": "RSA", "key": private_key})
-
 def run():
     try:
         # Load private key
         private_key = load_private_key(private_key_pem)
 
-        # Convert private key to JWK
-        jwk_private_key = convert_private_key_to_jwk(private_key)
-
-        # Create JWE
-        encrypted_token = jwe.encode(data_to_encode, jwk_private_key, algorithm='RSA-OAEP-256', enc='A256GCM')
+        # Create JWS
+        encoded_token = jwt.encode(data_to_encode, private_key, algorithm='RS256')
 
         # Make HTTP request
         url = 'https://sakshamuat.axisbank.co.in/gateway/api/v2/CRMNext/login'
@@ -69,7 +63,7 @@ def run():
             'Content-Type': 'application/jose+json',
         }
 
-        response = requests.post(url, data=encrypted_token, headers=headers)
+        response = requests.post(url, data=encoded_token, headers=headers)
 
         print('API Response:', response.text)
     except Exception as e:
