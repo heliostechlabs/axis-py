@@ -1,5 +1,6 @@
 import requests
-from jose import jwe, jwk, jwt
+from jose import jwt, jwk
+from jose.constants import ALGORITHMS
 import ssl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -49,12 +50,8 @@ rwT93M7Rh8W8gvuN497C+Tg=
 def run():
     try:
         # Create JWE
-        keystore = jwk.JWKSet()
         private_key = jwk.construct(private_key_pem, 'pem', kid='key-id')
-        jwe_token = jwe.encrypt(data_to_encode, private_key, alg='RSA-OAEP', enc='A256GCM')
-
-        # Create JWS
-        jws_token = jwt.encode(data=jwe_token, key=private_key.key, algorithm='RS256')
+        jwe_token = jwt.encode(data_to_encode, private_key, algorithm='RS256', headers={'alg': 'RSA-OAEP', 'enc': 'A256GCM'})
 
         # Make HTTP request
         url = 'https://sakshamuat.axisbank.co.in/gateway/api/v2/CRMNext/login'
@@ -64,7 +61,7 @@ def run():
         }
 
         # Adjust SSL/TLS options
-        response = requests.post(url, data=jws_token, headers=headers, verify=False)
+        response = requests.post(url, data=jwe_token, headers=headers, verify=False)
 
         print('API Response:', response.text)
     except Exception as error:
