@@ -1,13 +1,6 @@
-import requests
-from jose import jwt, jwk
-from cryptography.hazmat.primitives import serialization
+from jose import jwe, jwk, jwt
 from cryptography.hazmat.backends import default_backend
-from jose.constants import ALGORITHMS
-import ssl
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-# Suppress only the InsecureRequestWarning from urllib3 needed for self-signed certificates
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from cryptography.hazmat.primitives import serialization
 
 # Define the data to be encoded
 data_to_encode = {
@@ -49,24 +42,37 @@ rwT93M7Rh8W8gvuN497C+Tg=
 -----END PRIVATE KEY-----
 """
 
+def load_private_key(private_key_pem):
+    return serialization.load_pem_private_key(
+        private_key_pem.encode(),
+        password=None,
+        backend=default_backend()
+    )
+
+def convert_private_key_to_jwk(private_key):
+    return jwk.construct({"kty": "RSA", "key": private_key})
+
 def run():
     try:
+        # Load private key
+        private_key = load_private_key(private_key_pem)
+
+        # Convert private key to JWK
+        jwk_private_key = convert_private_key_to_jwk(private_key)
+
         # Create JWE
-        private_key = serialization.load_pem_private_key(private_key_pem.encode(), password=None, backend=default_backend())
-        jwe_token = jwt.encode(data_to_encode, private_key, algorithm='RS256', headers={'alg': 'RSA-OAEP', 'enc': 'A256GCM'})
+        encrypted_token = jwe.encode(data_to_encode, jwk_private_key, algorithm='RSA-OAEP-256', enc='A256GCM')
 
         # Make HTTP request
         url = 'https://sakshamuat.axisbank.co.in/gateway/api/v2/CRMNext/login'
         headers = {
-            'Content-Type': 'application/json',
-            # Add any other required headers here
+            'Content-Type': 'application/jose+json',
         }
 
-        # Adjust SSL/TLS options
-        response = requests.post(url, data=jwe_token, headers=headers, verify=False)
+        response = requests.post(url, data=encrypted_token, headers=headers)
 
         print('API Response:', response.text)
-    except Exception as error:
-        print('Error:', str(error))
+    except Exception as e:
+        print('Error:', str(e))
 
 run()
