@@ -1,7 +1,7 @@
 import jwt
 import requests
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
 private_key_pem = """
@@ -69,7 +69,12 @@ def run():
             'Content-Type': 'application/jose+json',
         }
 
-        response = requests.post(url, data=encoded_token, headers=headers)
+        response = requests.post(
+            url,
+            data=encoded_token,
+            headers=headers,
+            verify=False,  # Disabling SSL verification (not recommended in production)
+        )
 
         print('API Response:', response.text)
     except Exception as e:
