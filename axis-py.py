@@ -3,6 +3,7 @@ import requests
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+import ssl
 
 private_key_pem = """
 -----BEGIN PRIVATE KEY-----
@@ -69,11 +70,18 @@ def run():
             'Content-Type': 'application/jose+json',
         }
 
+        # Specify TLS version and cipher suite
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context.set_ciphers('AES256-SHA')
+
         response = requests.post(
             url,
             data=encoded_token,
             headers=headers,
             verify=False,  # Disabling SSL verification (not recommended in production)
+            timeout=10,  # Set a reasonable timeout
+            cert=None,  # You can provide a client certificate if required
+            ssl_context=context,
         )
 
         print('API Response:', response.text)
